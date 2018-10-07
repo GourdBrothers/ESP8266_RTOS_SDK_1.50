@@ -21,8 +21,17 @@ ifndef PDIR # {
 GEN_IMAGES= eagle.app.v6.out
 GEN_BINS= eagle.app.v6.bin
 SPECIAL_MKTARGETS=$(APP_MKTARGETS)
+
+####################################################################
+# 子目录，如果你在该makfile文件目录里新建了一个源文件目录，需要添加到这里
+# 否则不会编译未添加的目录的源文件！
 SUBDIRS=    \
 	user
+
+# 比如添加了一个 uartFuns 文件夹，则：
+#SUBDIRS=    \
+#   user    \
+#   uartFuns
 
 endif # } PDIR
 
@@ -36,6 +45,9 @@ TARGET_LDFLAGS =		\
 	--longcalls \
 	--text-section-literals
 
+#############################################################
+# 根据 FLAVOR 变量选择优化等级
+# -O0不优化，-O2中级优化
 ifeq ($(FLAVOR),debug)
     TARGET_LDFLAGS += -g -O2
 endif
@@ -44,9 +56,25 @@ ifeq ($(FLAVOR),release)
     TARGET_LDFLAGS += -g -O0
 endif
 
+
+#############################################################
+# 添加静态链接库，对应前面 SUBDIRS 变量设置的目录
+# 每一个文件夹里的源代码先编译成对应的静态库，然后在进行链接
+# 所以如果添加新的源码文件夹，也需要在这里添加对应的静态库！
 COMPONENTS_eagle.app.v6 = \
 	user/libuser.a
 
+# uartFuns
+#COMPONENTS_eagle.app.v6 =   \
+#   user/libuser.a          \
+#   uartFuns/libUartFuns.a
+
+
+#############################################################
+# 链接参数
+# 参考lib文件夹里的静态链接库
+# 比如，如果需要使用smartconfig接口
+# 只需要添加 -lsmartconfig 即可。
 LINKFLAGS_eagle.app.v6 = \
 	-L$(SDK_PATH)/lib        \
 	-Wl,--gc-sections   \
@@ -114,7 +142,10 @@ DDEFINES +=				\
 # Required for each makefile to inherit from the parent
 #
 
+#############################################################
+# 把当前目录下的 include 文件夹包含进来
 INCLUDES := $(INCLUDES) -I $(PDIR)include
+# 把子目录包含进来
 sinclude $(SDK_PATH)/Makefile
 
 .PHONY: FORCE

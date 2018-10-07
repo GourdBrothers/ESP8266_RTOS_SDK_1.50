@@ -4,8 +4,10 @@ ifndef PDIR
 
 endif
 
+# ==================================================
+# 编译工具的选择
 ifeq ($(COMPILE), xcc)
-    AR = xt-ar
+  AR = xt-ar
 	CC = xt-xcc
 	NM = xt-nm
 	CPP = xt-xt++
@@ -20,12 +22,28 @@ else
 	OBJDUMP = xtensa-lx106-elf-objdump
 endif
 
+############################################
+# 参数默认配置
+
+# =none - 不使用boot
+# =old - 使用老版本的boot_v1.1+
+# =new - 使用新版本的boot_v1.2+
 BOOT?=none
+
+# =0 - 不使用远程升级FOTA
+# =1 - 使用FOTA，生成user1.<flash_map>.<BOOT>.bin
+# =2 - 使用FOTA，生成user2.<flash_map>.<BOOT>.bin
 APP?=0
+
+# SPI速率和模式，一般不用改动
 SPI_SPEED?=40
 SPI_MODE?=QIO
+
+# SPI_SIZE_MAP flash映射方式
+# 4MB Flash使用 SPI_SIZE_MAP?=4
 SPI_SIZE_MAP?=0
 
+# =====================================================
 ifeq ($(BOOT), new)
     boot = new
 else
@@ -144,8 +162,13 @@ else
   endif
 endif
 
+
+############################################
+# 选择链接工具
+# 这里选择了主目录下的 ld/eagle.app.v6.ld
 LD_FILE = $(LDDIR)/eagle.app.v6.ld
 
+# 如果boot!=none，才进入这里
 ifneq ($(boot), none)
 ifneq ($(app),0)
     ifneq ($(findstring $(size_map),  6  8  9),)
@@ -177,6 +200,7 @@ else
     app = 0
 endif
 
+# ===================================================================
 CSRCS ?= $(wildcard *.c)
 CPPSRCS ?= $(wildcard *.cpp)
 ASRCs ?= $(wildcard *.s)
@@ -186,25 +210,30 @@ SUBDIRS ?= $(patsubst %/,%,$(dir $(wildcard */Makefile)))
 ODIR := .output
 OBJODIR := $(ODIR)/$(TARGET)/$(FLAVOR)/obj
 
+# 设置 OBJS 变量
 OBJS := $(CSRCS:%.c=$(OBJODIR)/%.o) \
         $(CPPSRCS:%.cpp=$(OBJODIR)/%.o) \
         $(ASRCs:%.s=$(OBJODIR)/%.o) \
         $(ASRCS:%.S=$(OBJODIR)/%.o)
 
+# 设置 DEPS 变量
 DEPS := $(CSRCS:%.c=$(OBJODIR)/%.d) \
         $(CPPSRCS:%.cpp=$(OBJODIR)/%.d) \
         $(ASRCs:%.s=$(OBJODIR)/%.d) \
         $(ASRCS:%.S=$(OBJODIR)/%.d)
 
+# 设置 LIBODIR 库文件夹
 LIBODIR := $(ODIR)/$(TARGET)/$(FLAVOR)/lib
 OLIBS := $(GEN_LIBS:%=$(LIBODIR)/%)
 
 IMAGEODIR := $(ODIR)/$(TARGET)/$(FLAVOR)/image
 OIMAGES := $(GEN_IMAGES:%=$(IMAGEODIR)/%)
 
+# 设置 BINODIR 二进制文件夹
 BINODIR := $(ODIR)/$(TARGET)/$(FLAVOR)/bin
 OBINS := $(GEN_BINS:%=$(BINODIR)/%)
 
+#############################################################
 CCFLAGS += 			\
 	-g			\
 	-Wpointer-arith		\
@@ -255,7 +284,10 @@ endef
 $(BINODIR)/%.bin: $(IMAGEODIR)/%.out
 	@mkdir -p $(BIN_PATH)
 	@mkdir -p $(BINODIR)
-	
+
+
+# 默认是 app==0
+# 下面是输出打印信息
 ifeq ($(APP), 0)
 	@$(RM) -r $(BIN_PATH)/eagle.S $(BIN_PATH)/eagle.dump
 	@$(OBJDUMP) -x -s $< > $(BIN_PATH)/eagle.dump
@@ -322,8 +354,12 @@ endif
 # Should be done in top-level makefile only
 #
 
+############################################
+# make all执行的方法
 all:	.subdirs $(OBJS) $(OLIBS) $(OIMAGES) $(OBINS) $(SPECIAL_MKTARGETS)
 
+############################################
+# make clean执行的方法
 clean:
 	$(foreach d, $(SUBDIRS), $(MAKE) -C $(d) clean;)
 	$(RM) -r $(ODIR)/$(TARGET)/$(FLAVOR)
@@ -346,6 +382,7 @@ endif
 endif
 endif
 
+# “$<”表示所有的依赖目标集（所有.c后缀文件），“$@”表示目标集（所有.o后缀文件）
 $(OBJODIR)/%.o: %.c
 	@mkdir -p $(OBJODIR);
 	$(CC) $(if $(findstring $<,$(DSRCS)),$(DFLAGS),$(CFLAGS)) $(COPTS_$(*F)) -o $@ -c $<
@@ -413,6 +450,10 @@ $(foreach image,$(GEN_IMAGES),$(eval $(call MakeImage,$(basename $(image)))))
 #
 # Required for each makefile to inherit from the parent
 #
+
+############################################
+# 设置头文件路径
+# 把主目录下的 include头文件包含进来
 
 INCLUDES := $(INCLUDES) -I $(SDK_PATH)/include -I $(SDK_PATH)/extra_include
 INCLUDES += -I $(SDK_PATH)/driver_lib/include
