@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "esp_common.h": "c",
+        "uart.h": "c",
+        "esp_libc.h": "c"
+    }
+}

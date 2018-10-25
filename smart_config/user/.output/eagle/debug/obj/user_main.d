@@ -77,12 +77,4 @@
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/smartconfig.h \
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/spi_flash.h \
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/pwm.h \
- /mnt/Share/ESP8266_RTOS_SDK_1.50//include/lwip/lwip/sockets.h \
- /mnt/Share/ESP8266_RTOS_SDK_1.50//include/lwip/ipv4/lwip/inet.h \
- /mnt/Share/ESP8266_RTOS_SDK_1.50//include/lwip/ipv6/lwip/inet6.h \
- /mnt/Share/ESP8266_RTOS_SDK_1.50//include/lwip/lwip/multi-threads/sockets_mt.h \
- /mnt/Share/ESP8266_RTOS_SDK_1.50//include/lwip/lwip/dns.h \
- /mnt/Share/ESP8266_RTOS_SDK_1.50//include/lwip/lwip/err.h \
- /mnt/Share/ESP8266_RTOS_SDK_1.50//include/lwip/lwip/netdb.h \
- /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/espconn.h \
- /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/airkiss.h
+ ../include/uart.h
