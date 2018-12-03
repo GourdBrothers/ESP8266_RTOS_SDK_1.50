@@ -28,6 +28,7 @@
 #include "freertos/task.h"
 
 #include "userUart.h"
+#include "userFlash.h"
 
 /******************************************************************************
  * FunctionName : user_rf_cal_sector_set
@@ -78,47 +79,6 @@ uint32 user_rf_cal_sector_set(void)
     return rf_cal_sec;
 }
 
-void task1(void *arg)
-{
-    printf("\ntask1 is run!\n");
-    int cnt=0;
-    while(1)
-    {
-        vTaskDelay(100/portTICK_RATE_MS);
-        cnt++;
-        printf("task1  run:%d\n",cnt);
-    }
-    vTaskDelete(NULL);
-
-}
-
-void task2(void *arg)
-{
-    printf("\ntask2 is run!\n");
-    int cnt=0;
-    while(1)
-    {
-        vTaskDelay(200/portTICK_RATE_MS);
-        cnt++;
-        printf("task2  run:%d\n",cnt);
-    }
-    vTaskDelete(NULL);
-
-}
-
-void task3(void *arg)
-{
-    printf("\ntask3 is run!\n");
-    int cnt=0;
-    while(1)
-    {
-        vTaskDelay(300/portTICK_RATE_MS);
-        cnt++;
-        printf("task3  run:%d\n",cnt);
-    }
-    vTaskDelete(NULL);
-
-}
 
 /******************************************************************************
  * FunctionName : user_init
@@ -135,14 +95,12 @@ void ICACHE_FLASH_ATTR user_init(void)
 	printf("ESP8266 chip ID:0x%08X\n",system_get_chip_id());
 	printf("FreeRTOS Inside!!\n");
 
-    /* need to set opmode before you set config */
-    wifi_set_opmode(NULL_MODE);
+    char buf[16];
+    Fun_Flash_WR(0x00,buf,16);
+    Fun_Flash_RD(0x00,buf,16);
 
-	printf("haha\n");
-
-    xTaskCreate(task1,"task1",256,NULL,2,NULL);
-    xTaskCreate(task2,"task2",256,NULL,2,NULL);
-    xTaskCreate(task3,"task3",256,NULL,2,NULL);
+    extern void task_wifi_Handle(void *arg);
+    xTaskCreate(task_wifi_Handle,(const signed char*)"task_wifi_Handle",256,NULL,2,NULL);
 
 }
 

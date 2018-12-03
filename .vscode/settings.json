@@ -2,6 +2,14 @@
     "files.associations": {
         "esp_common.h": "c",
         "uart.h": "c",
-        "esp_libc.h": "c"
-    }
+        "esp_libc.h": "c",
+        "useruart.h": "c",
+        "userflash.h": "c",
+        "userwifi.h": "c",
+        "esp_softap.h": "c",
+        "esp_wifi.h": "c",
+        "smartconfig.h": "c",
+        "socket.h": "c"
+    },
+    "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }

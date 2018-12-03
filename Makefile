@@ -247,8 +247,8 @@ CCFLAGS += 			\
 	-ffunction-sections \
 	-fdata-sections	\
 	-fno-builtin-printf	\
-	-fno-jump-tables
-#	-Wall			
+	-fno-jump-tables \
+	-Wall			
 
 CFLAGS = $(CCFLAGS) $(DEFINES) $(EXTRA_CCFLAGS) $(INCLUDES)
 DFLAGS = $(CCFLAGS) $(DDEFINES) $(EXTRA_CCFLAGS) $(INCLUDES)

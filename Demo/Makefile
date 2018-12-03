@@ -28,7 +28,8 @@ SPECIAL_MKTARGETS=$(APP_MKTARGETS)
 SUBDIRS=    \
 	user \
 	userUart \
-	userFlash 
+	userFlash \
+	userWifi
 
 
 endif # } PDIR
@@ -62,7 +63,8 @@ endif
 COMPONENTS_eagle.app.v6 = \
 	user/libuser.a \
 	userUart/libuserUart.a \
-	userFlash/libuserFlash.a 
+	userFlash/libuserFlash.a \
+	userWifi/libuserWifi.a 
 
 
 #############################################################
@@ -137,14 +139,7 @@ DDEFINES +=				\
 # Required for each makefile to inherit from the parent
 #
 
-#############################################################
-# 把当前目录下的 include 文件夹包含进来
-INCLUDES := $(INCLUDES) -I \
-            $(PDIR)include -I\
-			$(PDIR)userUart \
-			$(PDIR)userFlash
-            
-# 把子目录包含进来
+INCLUDES := $(INCLUDES) -I $(PDIR)include
 sinclude $(SDK_PATH)/Makefile
 
 .PHONY: FORCE

@@ -40,11 +40,8 @@ endif
 # Required for each makefile to inherit from the parent
 #
 
-# 查找头文件时，进入当前文件夹的 include 文件夹进行查找（如果有）
 INCLUDES := $(INCLUDES) -I $(PDIR)include
-# 在当前文件夹的进行查找
 INCLUDES += -I ./
-# 在主目录下的 include/ets/ 文件夹进行查找
 PDIR := ../$(PDIR)
 sinclude $(PDIR)Makefile
 
