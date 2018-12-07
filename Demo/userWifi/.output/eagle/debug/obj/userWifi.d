@@ -77,6 +77,7 @@
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/smartconfig.h \
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/spi_flash.h \
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/pwm.h \
+ /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/espconn.h \
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/lwip/lwip/sockets.h \
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/lwip/ipv4/lwip/inet.h \
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/lwip/ipv6/lwip/inet6.h \

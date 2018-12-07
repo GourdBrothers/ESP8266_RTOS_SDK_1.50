@@ -7,6 +7,8 @@
 
 #include "esp_common.h"
 
+#include "espconn.h"
+
 #include "lwip/sockets.h"
 
 #include "freertos/FreeRTOS.h"
@@ -23,11 +25,30 @@
 int wifi_pro_flow = 0 ;
 int stationStatus = 0 ;
 
-int socket_fd=0;
-struct sockaddr_in server_addr;
-unsigned char udp_msg[6]="12345";
-unsigned char from[128];
-int fromlen;
+// udp 
+struct espconn user_udp_espconn;
+
+void user_udp_sent_cb(void *arg)   //发送
+{
+	os_printf("\r\n发送成功！\r\n");
+
+}
+
+void user_udp_recv_cb(void *arg,char *pdata, unsigned short len)     //接收
+ {
+	os_printf("接收数据：%s", pdata);
+
+	//每次发送数据确保端口参数不变
+	user_udp_espconn.proto.udp = (esp_udp *) os_zalloc(sizeof(esp_udp));
+	user_udp_espconn.type = ESPCONN_UDP;
+	user_udp_espconn.proto.udp->local_port = 2000;
+	user_udp_espconn.proto.udp->remote_port = 8686;
+	const char udp_remote_ip[4] = { 255, 255, 255, 255 };
+	memcpy(user_udp_espconn.proto.udp->remote_ip, udp_remote_ip, 4);
+
+	espconn_sent((struct espconn *) arg, (uint8*)"已经收到啦！", strlen("已经收到啦!"));
+}
+
 
 //-----------------------------------------------------------------
 void Fun_wifi_set_pro_flow(int newFlow)
@@ -54,8 +75,6 @@ int  Fun_wifi_get_pro_flow(void)
 void task_wifi_Handle(void *arg)
 {
     struct station_config *pConfigValue = NULL;
-    int ret;
-    
 
     Fun_wifi_set_pro_flow(WIFI_FLOW_GET_PARAM);
 
@@ -108,47 +127,30 @@ void task_wifi_Handle(void *arg)
                     case STATION_GOT_IP:
                         os_printf("stationStatus = STATION_GOT_IP!\n");
                         Fun_wifi_set_pro_flow(WIFI_FLOW_CONNECT_TCP);
-                        socket_fd = 0;
-                        memset(&server_addr,0,sizeof(struct sockaddr_in));
-                        server_addr.sin_family = AF_INET;
-                        server_addr.sin_addr.s_addr = INADDR_ANY;
-                        server_addr.sin_port = htons(1200);
-                        server_addr.sin_len = sizeof(server_addr);
                         break;
                 }
                 break;
 
             case WIFI_FLOW_CONNECT_TCP:
-                socket_fd = socket(AF_INET,SOCK_DGRAM,0);
-                if (socket_fd == -1)
-                {
-                    os_printf("ESP8266 UDP task > failed to create sock!\n");
-                }
-                else
-                {
-                    os_printf("ESP8266 UDP task > sock Ok!:%d\n", socket_fd);
-                    Fun_wifi_set_pro_flow(WIFI_FLOW_READ_TCP);
-                }
-                
+
+                user_udp_espconn.proto.udp = (esp_udp *) os_zalloc(sizeof(esp_udp));//分配空间
+                user_udp_espconn.type = ESPCONN_UDP;	 		  // 设置类型为UDP协议
+                user_udp_espconn.proto.udp->local_port = 2000;	  // 本地端口
+                user_udp_espconn.proto.udp->remote_port = 8686;   // 目标端口
+                const char udp_remote_ip[4] = { 255, 255, 255, 255 };  // 目标IP地址（广播）
+                memcpy(user_udp_espconn.proto.udp->remote_ip, udp_remote_ip, 4);
+
+                espconn_regist_recvcb(&user_udp_espconn, user_udp_recv_cb);    // 接收
+                espconn_regist_sentcb(&user_udp_espconn, user_udp_sent_cb);    // 发送
+                espconn_create(&user_udp_espconn);	 		  //建立 UDP 传输
+
                 break;
 
             case WIFI_FLOW_READ_TCP:
-                ret = bind(socket_fd,(struct sockaddr *)&server_addr,sizeof(server_addr));
-                if(ret!=0)
-                {
-                    os_printf("ESP8266 UDP task > captdns_task failed to bind sock!\n");
-                }else
-                {
-                    printf("ESP8266 UDP task > bind OK!\n");
-                    Fun_wifi_set_pro_flow(WIFI_FLOW_WRITE_TCP);
-                }
 
                 break;
 
             case WIFI_FLOW_WRITE_TCP:
-                ret = 0;
-                fromlen = 6;
-                sendto(socket_fd,(uint8*)udp_msg, ret, 0, (struct sockaddr *)&from, fromlen);
 
                 break;
 

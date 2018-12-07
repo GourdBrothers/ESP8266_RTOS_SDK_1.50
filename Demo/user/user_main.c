@@ -93,6 +93,8 @@ void ICACHE_FLASH_ATTR user_init(void)
 
 	printf("\nSDK version:%s,Date:%s,%s\n",system_get_sdk_version(),__DATE__,__TIME__);
 	printf("ESP8266 chip ID:0x%08X\n",system_get_chip_id());
+	printf("Flash ID:0x%08X\n",spi_flash_get_id());
+    
 	printf("FreeRTOS Inside!!\n");
 
     char buf[16];

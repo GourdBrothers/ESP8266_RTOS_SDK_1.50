@@ -9,7 +9,11 @@
         "esp_softap.h": "c",
         "esp_wifi.h": "c",
         "smartconfig.h": "c",
-        "socket.h": "c"
+        "socket.h": "c",
+        "task.h": "c",
+        "espconn.h": "c",
+        "sockets.h": "c",
+        "spi_flash.h": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "Disabled"
 }
