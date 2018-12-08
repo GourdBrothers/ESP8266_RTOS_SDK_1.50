@@ -91,15 +91,24 @@ void ICACHE_FLASH_ATTR user_init(void)
 
     uart_init_new();
 
-	printf("\nSDK version:%s,Date:%s,%s\n",system_get_sdk_version(),__DATE__,__TIME__);
-	printf("ESP8266 chip ID:0x%08X\n",system_get_chip_id());
-	printf("Flash ID:0x%08X\n",spi_flash_get_id());
+	os_printf("\nSDK version:%s,Date:%s,%s\n",system_get_sdk_version(),__DATE__,__TIME__);
+	os_printf("ESP8266 chip ID:0x%08X\n",system_get_chip_id());
+	os_printf("Flash ID:0x%08X\n",spi_flash_get_id());
     
-	printf("FreeRTOS Inside!!\n");
+	os_printf("FreeRTOS Inside!!\n");
 
-    char buf[16];
-    Fun_Flash_WR(0x00,buf,16);
-    Fun_Flash_RD(0x00,buf,16);
+    uint32 buf[16];
+    memset(buf,0x12345678,16);
+    Fun_Flash_WR(USER_FLASH_SECTOR_ADDR,buf,16);
+    memset(buf,0x00,16);
+    Fun_Flash_RD(USER_FLASH_SECTOR_ADDR,buf,16);
+
+    os_printf("buf:");
+    int index=0;
+    for(index=0;index<16;index++){
+       os_printf("%d ",buf[index]);
+    }
+    os_printf("\n");
 
     extern void task_wifi_Handle(void *arg);
     xTaskCreate(task_wifi_Handle,(const signed char*)"task_wifi_Handle",256,NULL,2,NULL);

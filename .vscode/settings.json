@@ -13,7 +13,10 @@
         "task.h": "c",
         "espconn.h": "c",
         "sockets.h": "c",
-        "spi_flash.h": "c"
+        "spi_flash.h": "c",
+        "flashmap.h": "c",
+        "userflashmap.h": "c"
     },
-    "C_Cpp.intelliSenseEngineFallback": "Disabled"
+    "C_Cpp.intelliSenseEngineFallback": "Disabled",
+    "C_Cpp.errorSquiggles": "Disabled"
 }

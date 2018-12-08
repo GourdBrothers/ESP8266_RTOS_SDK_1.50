@@ -76,4 +76,5 @@
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/esp8266/uart_register.h \
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/smartconfig.h \
  /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/spi_flash.h \
- /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/pwm.h
+ /mnt/Share/ESP8266_RTOS_SDK_1.50//include/espressif/pwm.h \
+ ../include/userFlashMap.h
