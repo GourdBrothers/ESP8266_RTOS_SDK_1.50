@@ -88,7 +88,6 @@ uint32 user_rf_cal_sector_set(void)
 *******************************************************************************/
 void ICACHE_FLASH_ATTR user_init(void)
 {
-
     uart_init_new();
 
 	os_printf("\nSDK version:%s,Date:%s,%s\n",system_get_sdk_version(),__DATE__,__TIME__);
@@ -97,21 +96,10 @@ void ICACHE_FLASH_ATTR user_init(void)
     
 	os_printf("FreeRTOS Inside!!\n");
 
-    uint32 buf[16];
-    memset(buf,0x12345678,16);
-    Fun_Flash_WR(USER_FLASH_SECTOR_ADDR,buf,16);
-    memset(buf,0x00,16);
-    Fun_Flash_RD(USER_FLASH_SECTOR_ADDR,buf,16);
-
-    os_printf("buf:");
-    int index=0;
-    for(index=0;index<16;index++){
-       os_printf("%d ",buf[index]);
-    }
-    os_printf("\n");
+    extern void Fun_Flash_Test(void);
+    Fun_Flash_Test();
 
     extern void task_wifi_Handle(void *arg);
     xTaskCreate(task_wifi_Handle,(const signed char*)"task_wifi_Handle",256,NULL,2,NULL);
 
 }
-

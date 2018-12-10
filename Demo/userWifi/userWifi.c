@@ -10,6 +10,7 @@
 #include "espconn.h"
 
 #include "lwip/sockets.h"
+//#include "lwip/def.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -25,30 +26,148 @@
 int wifi_pro_flow = 0 ;
 int stationStatus = 0 ;
 
+struct ip_info sta_ip_info;
+
 // udp 
 struct espconn user_udp_espconn;
+char udp_rec_Buf[512];
+// static const char udp_remote_ip[4] ICACHE_RODATA_ATTR STORE_ATTR = {192, 168, 2, 135};
+static const char udp_remote_ip[4] ICACHE_RODATA_ATTR STORE_ATTR = {255, 255, 255, 255};
 
-void user_udp_sent_cb(void *arg)   //发送
+
+void user_udp_recv_cb(void *arg, char *pdata, unsigned short len) //接收
 {
-	os_printf("\r\n发送成功！\r\n");
-
+    if (len > 0)
+    {
+        os_printf("user_udp_recv_cb set:len %d,%s\n", len, pdata);
+        memset(udp_rec_Buf, 0, 512);
+        memcpy(udp_rec_Buf, pdata, len);
+        os_printf("UDP data will sending:%s\n", udp_rec_Buf);
+        espconn_sent((struct espconn *)arg, (uint8 *)udp_rec_Buf, strlen(udp_rec_Buf));
+    }
 }
 
-void user_udp_recv_cb(void *arg,char *pdata, unsigned short len)     //接收
- {
-	os_printf("接收数据：%s", pdata);
+// udp socket
+#define UDP_REMOTE_IP    "255.255.255.255"
+// #define UDP_REMOTE_IP    "192.168.2.135"
+#define UDP_REMOTE_PORT  8080
+unsigned char udp_socket = 0;
+struct sockaddr_in sAddr;
 
-	//每次发送数据确保端口参数不变
-	user_udp_espconn.proto.udp = (esp_udp *) os_zalloc(sizeof(esp_udp));
-	user_udp_espconn.type = ESPCONN_UDP;
-	user_udp_espconn.proto.udp->local_port = 2000;
-	user_udp_espconn.proto.udp->remote_port = 8686;
-	const char udp_remote_ip[4] = { 255, 255, 255, 255 };
-	memcpy(user_udp_espconn.proto.udp->remote_ip, udp_remote_ip, 4);
-
-	espconn_sent((struct espconn *) arg, (uint8*)"已经收到啦！", strlen("已经收到啦!"));
+int user_udp_new(void)
+{
+    user_udp_espconn.proto.udp = (esp_udp *)os_zalloc(sizeof(esp_udp));
+    user_udp_espconn.type = ESPCONN_UDP;
+    user_udp_espconn.proto.udp->local_port = 8080;
+    user_udp_espconn.proto.udp->remote_port = 8080;
+    memcpy(user_udp_espconn.proto.udp->remote_ip, udp_remote_ip, 4);
+    //espconn_regist_recvcb(&user_udp_espconn, user_udp_recv_cb);
+    //espconn_regist_sentcb(&user_udp_espconn, user_udp_sent_cb);
+    char ret;
+    ret = espconn_create(&user_udp_espconn); // 建立 UDP 传输
+    return ret;
 }
 
+int usp_socket_new(void)
+{
+    memset(&sAddr,0,sizeof(struct sockaddr_in));
+    sAddr.sin_family = AF_INET;
+    // sAddr.sin_addr.s_addr = inet_addr(UDP_REMOTE_IP);
+    sAddr.sin_addr.s_addr = (u32_t)(sta_ip_info.ip.addr);
+    sAddr.sin_port = htons(UDP_REMOTE_PORT);
+
+    if ((udp_socket = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
+    {
+       return -1;
+        os_printf("udp_socket_new()->err:-1\n");
+    }
+
+    int ret=0;
+    ret = bind(udp_socket, (struct sockaddr*)&sAddr,sizeof(sAddr));
+    if(ret<0)
+    {
+       return -2;
+       os_printf("usp_socket_new()->err:-2\n");
+    }
+
+    os_printf("udp_socket_new()->ok\n");
+
+    return 0;
+}
+
+int usp_socket_read(void)
+{
+    struct timeval timeout;
+    fd_set fdset;
+
+    FD_ZERO(&fdset);
+    FD_SET(udp_socket, &fdset);
+
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 500 * 1000;
+
+    int ret;
+    ret = select(udp_socket + 1,&fdset, NULL, NULL, &timeout);
+    if (ret < 0)
+    {
+        return -1;
+    }
+
+    memset(&sAddr,0,sizeof(struct sockaddr_in));
+    sAddr.sin_family = AF_INET;
+    sAddr.sin_addr.s_addr = inet_addr(UDP_REMOTE_IP);
+    sAddr.sin_port = htons(UDP_REMOTE_PORT);
+
+    int recv_len=0;
+    unsigned int addr_led = sizeof(struct sockaddr_in);
+    memset(udp_rec_Buf,0,512);
+    if (FD_ISSET(udp_socket, &fdset))
+    {
+        recv_len = recvfrom(udp_socket, udp_rec_Buf, 512, MSG_DONTWAIT,
+                            (struct sockaddr *)&sAddr, &addr_led);
+        if (recv_len > 0)
+        {
+            os_printf("udp_socket_read->ok:%s\n",udp_rec_Buf);
+       }
+    }
+
+    return 0;
+}
+
+int usp_socket_write(void)
+{
+    struct timeval timeout;
+    fd_set fdset;
+
+    FD_ZERO(&fdset);
+    FD_SET(udp_socket, &fdset);
+
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 500 * 1000;
+
+    int ret;
+    ret = select(udp_socket + 1, NULL, &fdset, NULL, &timeout);
+    if (ret < 0)
+    {
+        return -1;
+    }
+
+    memset(&sAddr,0,sizeof(struct sockaddr_in));
+    sAddr.sin_family = AF_INET;
+    sAddr.sin_addr.s_addr = inet_addr(UDP_REMOTE_IP);
+    sAddr.sin_port = htons(UDP_REMOTE_PORT);
+
+    int send_len=0;
+    unsigned int addr_led = sizeof(struct sockaddr_in);
+    memset(udp_rec_Buf,'0',512);
+    send_len = sendto(udp_socket, udp_rec_Buf, 512, MSG_DONTWAIT,
+                            (struct sockaddr *)&sAddr, addr_led);
+    if(send_len>0){
+       os_printf("udp_socket_write->ok:%d,%s\n",send_len,udp_rec_Buf);
+    }
+
+    return 0;
+}
 
 //-----------------------------------------------------------------
 void Fun_wifi_set_pro_flow(int newFlow)
@@ -133,20 +252,22 @@ void task_wifi_Handle(void *arg)
 
             case WIFI_FLOW_CONNECT_TCP:
 
-                user_udp_espconn.proto.udp = (esp_udp *) os_zalloc(sizeof(esp_udp));//分配空间
-                user_udp_espconn.type = ESPCONN_UDP;	 		  // 设置类型为UDP协议
-                user_udp_espconn.proto.udp->local_port = 2000;	  // 本地端口
-                user_udp_espconn.proto.udp->remote_port = 8686;   // 目标端口
-                const char udp_remote_ip[4] = { 255, 255, 255, 255 };  // 目标IP地址（广播）
-                memcpy(user_udp_espconn.proto.udp->remote_ip, udp_remote_ip, 4);
+                wifi_get_ip_info(STATION_IF,&sta_ip_info);
+                os_printf("ssta_ip_info.ip:%d\n",sta_ip_info.ip.addr);
+                os_printf("netmask:%d\n",sta_ip_info.netmask.addr);
+                os_printf("sta_ip_info.gw:%d\n",sta_ip_info.gw.addr);
 
-                espconn_regist_recvcb(&user_udp_espconn, user_udp_recv_cb);    // 接收
-                espconn_regist_sentcb(&user_udp_espconn, user_udp_sent_cb);    // 发送
-                espconn_create(&user_udp_espconn);	 		  //建立 UDP 传输
+                //user_udp_new();
+                usp_socket_new();
+
+                usp_socket_write();
+                
+                Fun_wifi_set_pro_flow(WIFI_FLOW_READ_TCP);
 
                 break;
 
             case WIFI_FLOW_READ_TCP:
+                usp_socket_read();
 
                 break;
 
@@ -161,7 +282,7 @@ void task_wifi_Handle(void *arg)
                 break;
         }
 
-        vTaskDelay(100/portTICK_RATE_MS);
+        vTaskDelay(200/portTICK_RATE_MS);
 
     }
 

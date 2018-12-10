@@ -11,6 +11,8 @@ extern "C"
 {
 #endif
 
+#define SECTOR_SIZE 4096
+
 #define USER_FLASH_MAX_SECTOR 0x7F
 #define USER_FLASH_MIN_SECTOR 0x7C
 
