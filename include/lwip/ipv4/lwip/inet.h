@@ -100,9 +100,9 @@ struct in_addr {
 #define inet_addr_to_ipaddr_p(target_ipaddr_p, source_inaddr)   ((target_ipaddr_p) = (ip_addr_t*)&((source_inaddr)->s_addr))
 
 /* directly map this to the lwip internal functions */
-#define inet_addr(cp)         ipaddr_addr(cp)
-#define inet_aton(cp, addr)   ipaddr_aton(cp, (ip_addr_t*)addr)
-#define inet_ntoa(addr)       ipaddr_ntoa((ip_addr_t*)&(addr))
+#define inet_addr(cp)         ipaddr_addr(cp)   // 将字符串IP转换为int类型IP
+#define inet_aton(cp, addr)   ipaddr_aton(cp, (ip_addr_t*)addr) // 一个字符串IP地址转换为一个32位的网络序列IP地址
+#define inet_ntoa(addr)       ipaddr_ntoa((ip_addr_t*)&(addr))  // 将int类型IP转换为字符串IP
 #define inet_ntoa_r(addr, buf, buflen) ipaddr_ntoa_r((ip_addr_t*)&(addr), buf, buflen)
 
 #ifdef __cplusplus
