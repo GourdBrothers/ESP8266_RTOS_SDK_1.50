@@ -20,10 +20,16 @@
 #define TEST_AP_SSID "xcwk_26b"
 #define TEST_AP_PASSWORD "xcwk_26b"
 
+#define TCP_SERVER_IP   "192.168.2.135"
+#define TCP_SERVER_PORT 8080
+
 //-----------------------------------------------------------------
-extern int usp_socket_new(void);
-extern int usp_socket_read(void);
-extern int usp_socket_write(void);
+extern int udp_socket_new(void);
+extern int udp_socket_read(void);
+extern int udp_socket_write(void);
+
+extern  int Fun_tcp_socket_new(char *server_ip, u16_t in_port, int *pSocketId);
+extern  int Fun_tcp_socket_close(int *pSocketId);
 
 //-----------------------------------------------------------------
 static int wifi_pro_flow = 0;
@@ -55,7 +61,6 @@ void task_wifi_Handle(void *arg)
 {
     struct station_config *pConfigValue = NULL;
     struct ip_info sta_ip_info;
-
 
     Fun_wifi_set_pro_flow(WIFI_FLOW_GET_PARAM);
 
@@ -119,22 +124,23 @@ void task_wifi_Handle(void *arg)
             os_printf("netmask:%d\n", sta_ip_info.netmask.addr);
             os_printf("sta_ip_info.gw:%d\n", sta_ip_info.gw.addr);
 
-            //user_udp_new();
-            usp_socket_new();
+            // udp_socket_new();
+            extern int tcp_socket;
+            Fun_tcp_socket_new((char*)TCP_SERVER_IP,(u16_t)TCP_SERVER_PORT,&tcp_socket);
 
             Fun_wifi_set_pro_flow(WIFI_FLOW_READ_TCP);
 
             break;
 
         case WIFI_FLOW_READ_TCP:
-            usp_socket_read();
+            // udp_socket_read();
 
-            extern char send_trg;
-            if (send_trg == 1)
-            {
-                usp_socket_write();
-                send_trg = 0;
-            }
+            // extern char send_trg;
+            // if (send_trg == 1)
+            // {
+                // udp_socket_write();
+                // send_trg = 0;
+            // }
 
             break;
 
