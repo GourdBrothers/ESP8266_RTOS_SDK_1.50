@@ -94,73 +94,77 @@ airkiss_start_discover(void)
 	// os_timer_arm(&ssdp_time_serv, 1000, 1);//1s
 }
 
-void ICACHE_FLASH_ATTR
-smartconfig_done(sc_status status, void *pdata)
+void smartconfig_stateHandle(sc_status status, void *pdata)
 {
-    switch(status) {
-        case SC_STATUS_WAIT:
-            printf("SC_STATUS_WAIT\n");
-            if(pdata!=NULL)
-            {
-                printf("-->%s\n",pdata);
-            }
-            break;
-        case SC_STATUS_FIND_CHANNEL:
-            printf("SC_STATUS_FIND_CHANNEL\n");
-            if(pdata!=NULL)
-            {
-                printf("-->%s\n",pdata);
-            }
-            break;
-        case SC_STATUS_GETTING_SSID_PSWD:
-            printf("SC_STATUS_GETTING_SSID_PSWD\n");
-            if(pdata!=NULL)
-            {
-                printf("-->%d\n",pdata);
-            }
-            sc_type *type = pdata;
-            if (*type == SC_TYPE_ESPTOUCH) {
-                printf("SC_TYPE:SC_TYPE_ESPTOUCH\n");
-            } else {
-                printf("SC_TYPE:SC_TYPE_AIRKISS\n");
-            }
-            break;
-        case SC_STATUS_LINK:
-            printf("SC_STATUS_LINK\n");
-            if(pdata!=NULL)
-            {
-                printf("-->%s\n",pdata);
-            }
-            struct station_config *sta_conf = pdata;
-	
-	        wifi_station_set_config(sta_conf);
-	        wifi_station_disconnect();
-	        wifi_station_connect();
-            break;
-        case SC_STATUS_LINK_OVER:
-            printf("SC_STATUS_LINK_OVER\n");
-            
-            if (pdata != NULL) {
-				//SC_TYPE_ESPTOUCH
-                uint8 phone_ip[4] = {0};
+    switch (status)
+    {
+    case SC_STATUS_WAIT:
+        printf("SC_STATUS_WAIT\n");
+        if (pdata != NULL)
+        {
+            printf("-->%s\n", pdata);
+        }
+        break;
+    case SC_STATUS_FIND_CHANNEL:
+        printf("SC_STATUS_FIND_CHANNEL\n");
+        if (pdata != NULL)
+        {
+            printf("-->%s\n", pdata);
+        }
+        break;
+    case SC_STATUS_GETTING_SSID_PSWD:
+        printf("SC_STATUS_GETTING_SSID_PSWD\n");
+        if (pdata != NULL)
+        {
+            printf("-->%d\n", pdata);
+        }
+        sc_type *type = pdata;
+        if (*type == SC_TYPE_ESPTOUCH)
+        {
+            printf("SC_TYPE:SC_TYPE_ESPTOUCH\n");
+        }
+        else
+        {
+            printf("SC_TYPE:SC_TYPE_AIRKISS\n");
+        }
+        break;
+    case SC_STATUS_LINK:
+        printf("SC_STATUS_LINK\n");
+        if (pdata != NULL)
+        {
+            printf("-->%s\n", pdata);
+        }
+        struct station_config *sta_conf = pdata;
 
-                memcpy(phone_ip, (uint8*)pdata, 4);
-                printf("Phone ip: %d.%d.%d.%d\n",phone_ip[0],phone_ip[1],phone_ip[2],phone_ip[3]);
-            } else {
-            	//SC_TYPE_AIRKISS - support airkiss v2.0
-				airkiss_start_discover();
-			}
-            smartconfig_stop();
-            break;
+        wifi_station_set_config(sta_conf);
+        wifi_station_disconnect();
+        wifi_station_connect();
+        break;
+    case SC_STATUS_LINK_OVER:
+        printf("SC_STATUS_LINK_OVER\n");
+
+        if (pdata != NULL)
+        {
+            //SC_TYPE_ESPTOUCH
+            uint8 phone_ip[4] = {0};
+
+            memcpy(phone_ip, (uint8 *)pdata, 4);
+            printf("Phone ip: %d.%d.%d.%d\n", phone_ip[0], phone_ip[1], phone_ip[2], phone_ip[3]);
+        }
+        else
+        {
+            //SC_TYPE_AIRKISS - support airkiss v2.0
+            airkiss_start_discover();
+        }
+        smartconfig_stop();
+        break;
     }
-	
 }
-
 
 void task_wifi_Get_SSID_PWD(void *arg)
 {
     os_printf("Smartconfig Version:%s\n",smartconfig_get_version());
-    smartconfig_start(smartconfig_done,1);
+    smartconfig_start(smartconfig_stateHandle,1);
     os_printf("task_wifi_Get_SSID_PWD Version done\n");
     vTaskDelete(NULL);
 }
@@ -184,9 +188,9 @@ void ICACHE_FLASH_ATTR user_init(void)
     extern void Fun_Flash_Test(void);
     Fun_Flash_Test();
 
-    //extern void task_wifi_Handle(void *arg);
-    //xTaskCreate(task_wifi_Handle,(const signed char*)"task_wifi_Handle",256,NULL,2,NULL);
+    extern void task_wifi_Handle(void *arg);
+    xTaskCreate(task_wifi_Handle,(const signed char*)"task_wifi_Handle",512,NULL,2,NULL);
 
-    xTaskCreate(task_wifi_Get_SSID_PWD,(const signed char*)"task_wifi_Get_SSID_PWD",256,NULL,2,NULL);
+    //xTaskCreate(task_wifi_Get_SSID_PWD,(const signed char*)"task_wifi_Get_SSID_PWD",256,NULL,2,NULL);
 
 }

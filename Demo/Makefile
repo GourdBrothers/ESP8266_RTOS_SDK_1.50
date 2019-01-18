@@ -25,11 +25,13 @@ SPECIAL_MKTARGETS=$(APP_MKTARGETS)
 ####################################################################
 # 子目录，如果你在该makfile文件目录里新建了一个源文件目录，需要添加到这里
 # 否则不会编译未添加的目录的源文件！
-SUBDIRS=    \
-	user \
-	userUart \
-	userFlash \
-	userWifi
+SUBDIRS=		\
+	user		\
+	userUart	\
+	userFlash	\
+	userWifi	\
+	userNTP
+
 
 
 endif # } PDIR
@@ -58,13 +60,14 @@ endif
 
 #############################################################
 # 添加静态链接库，对应前面 SUBDIRS 变量设置的目录
-# 每一个文件夹里的源代码先编译成对应的静态库，然后在进行链接
+# 每一个文件夹里的源代码先编译成对应的静态库，然后再进行链接
 # 所以如果添加新的源码文件夹，也需要在这里添加对应的静态库！
-COMPONENTS_eagle.app.v6 = \
-	user/libuser.a \
-	userUart/libuserUart.a \
-	userFlash/libuserFlash.a \
-	userWifi/libuserWifi.a 
+COMPONENTS_eagle.app.v6 =		\
+	user/libuser.a				\
+	userUart/libuserUart.a		\
+	userFlash/libuserFlash.a	\
+	userWifi/libuserWifi.a		\
+	userNTP/libuserNTP.a
 
 
 #############################################################

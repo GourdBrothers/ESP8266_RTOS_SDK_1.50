@@ -21,7 +21,8 @@
         "mqttfreertos.h": "c",
         "esp_sta.h": "c",
         "freertos.h": "c",
-        "sntp_time.h": "c"
+        "sntp_time.h": "c",
+        "sntp.h": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "Disabled",
     "C_Cpp.errorSquiggles": "Disabled"

@@ -28,6 +28,9 @@ extern int udp_socket_new(void);
 extern int udp_socket_read(void);
 extern int udp_socket_write(void);
 
+extern void Fun_userNTP_Init(void);
+extern void Fun_userNTP_GetTime(void);
+
 extern  int Fun_tcp_socket_new(char *server_ip, u16_t in_port, int *pSocketId);
 extern  int Fun_tcp_socket_close(int *pSocketId);
 
@@ -125,8 +128,11 @@ void task_wifi_Handle(void *arg)
             os_printf("sta_ip_info.gw:%d\n", sta_ip_info.gw.addr);
 
             // udp_socket_new();
-            extern int tcp_socket;
-            Fun_tcp_socket_new((char*)TCP_SERVER_IP,(u16_t)TCP_SERVER_PORT,&tcp_socket);
+            //extern int tcp_socket;
+            //Fun_tcp_socket_new((char*)TCP_SERVER_IP,(u16_t)TCP_SERVER_PORT,&tcp_socket);
+
+
+            Fun_userNTP_Init();
 
             Fun_wifi_set_pro_flow(WIFI_FLOW_READ_TCP);
 
@@ -141,6 +147,8 @@ void task_wifi_Handle(void *arg)
                 // udp_socket_write();
                 // send_trg = 0;
             // }
+            
+            Fun_userNTP_GetTime();
 
             break;
 
